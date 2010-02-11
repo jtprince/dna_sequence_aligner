@@ -1,0 +1,10 @@
+= DNASequenceAligner
+
+== Examples
+
+    dna_sequence_aligner.rb template.fasta others.fasta
+    dna_sequence_aligner.rb template.fasta other1.fasta other2.fasta
+
+== Copyright
+
+See LICENSE
