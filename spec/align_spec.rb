@@ -9,13 +9,27 @@ describe 'aligning' do
     @conc = '--A?A-AT?TTGGGGGCCCAAC?C---'
     @testcase = "testcase.fasta"
 
-    @pa = [ ["--ABCDEFGHIJKLMNOP", "-----DEFGHIJK-MN--"], 
-      ["--ABCDEFGHIJKLM-NOP", "--ABCDE---IJKLMZNOP"],
-      ["--ABCDEFGHIJKLMNOP", "-------------LMNOP"],
-      ["--ABCDEFGHIJKLMNOP", "------ABCDEFGHIJKLMN--"],
-      ["--ABCDEFGHIJKLMNOP", "--ABC------JKLM--P"],
-      ["--ABC--DEFGHIJKLMNOP", "--ABCZZDEFGHIJKLMNOP"],
+    @pa = [ ["--ABCDEFGHIJKLMNOP", 
+             "-----DEFGHIJK-MN--"], 
+            ["--ABCDEFGHIJKLM-NOP", 
+             "--ABCDE---IJKLMZNOP"],
+            ["--ABCDEFGHIJKLMNOP", 
+             "-------------LMNOP"],
+            ["--ABCDEFGHIJKLMNOP", 
+             "--ABCDEFGHIJKLMN--"],
+            ["--ABCDEFGHIJKLMNOP", 
+             "--ABC------JKLM--P"],
+            ["--ABC--DEFGHIJKLMNOP", 
+              "--ABCZZDEFGHIJKLMNOP"],
     ]
+    @template = "--ABC--DEFGHIJKLM-NO"
+    @aligned = ["-------DEFGHIJK-M-N-", 
+                "--ABC--DE---IJKLMZNO", 
+                "---------------LM-NO", 
+                "--ABC--DEFGHIJKLM-N-",
+                "--ABC--------JKLM---", 
+                "--ABCZZDEFGHIJKLM-NO"
+                ] 
   end
 
   it 'removes bad ends' do
@@ -25,10 +39,7 @@ describe 'aligning' do
 
   it 'aligns pairwise' do
     (template, others) = Bio::Alignment::DNASequenceReads.merge_pairwise(@pa)
-    template.is "--ABC--DEFGHIJKLM-NO"
-
-    ###############################
-    HERE
-    others.enums
+    template.is @template
+    @aligned.enums others
   end
 end
