@@ -19,7 +19,9 @@ def fasta_entries(file)
   objects
 end
 
-opt = Bio::Alignment::DNASequenceReads::ALIGN_OPTS.dup
+DNAReads = Bio::Alignment::DNASequenceReads
+
+opt = DNAReads::ALIGN_OPTS.dup
 
 op = OptionParser.new do |op|
   op.banner = "usage: #{File.basename(__FILE__)} <template>.fasta <read>.txt ..."
@@ -42,20 +44,25 @@ end
 
 dumpfile = "mydump.rbdump"
 
-palign = 
-  if File.exist?(dumpfile)
-    Marshal.load(IO.read(dumpfile))
-  else
+labels = nil
+  #if File.exist?(dumpfile)
+  #  Marshal.load(IO.read(dumpfile))
+  #else
     files = ARGV.map
     fasta_entries = files.inject([]) {|ar, file| ar.push( *fasta_entries(file) ) }
     bioseqs = fasta_entries.map {|entry| Bio::Sequence::NA.new(entry.seq) }
     labels = fasta_entries.map {|entry| entry.definition }
 
-    pairwise = Bio::Alignment::DNASequenceReads.align_pairwise(bioseqs, opt)
+    pairwise = DNAReads.align_pairwise(bioseqs, opt)
     File.open(dumpfile, 'w') {|out| out.print Marshal.dump(pairwise) }
-  end
+    pairwise
+  #end
 
-Bio::Alignment::DNASequenceReads.merge_pairwise(palign)
+(template, others) = DNAReads.merge_pairwise(pairwise)
+template_label = labels.shift
+
+DNAReads.print_align(STDOUT, others, labels, :template => template, :template_label => template_label, :chars => 30)
+
 
 
 #Bio::Alignment::DNASequenceReads.print_align(STDOUT, align_s, labels)

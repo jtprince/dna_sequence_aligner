@@ -30,7 +30,11 @@ module Bio
         start = find_start_good_section(iupac_concensus_string, min_length)
         from_end = find_start_good_section(iupac_concensus_string.reverse, min_length)
         length = iupac_concensus_string.length - start - from_end
-        [start, length]
+        if length < 0
+          nil
+        else
+          [start, length]
+        end
       end
 
       def hash_opts_to_clustalopts(hash)
@@ -89,9 +93,16 @@ module Bio
           clust_al = clustal_align([template, bseq], factory)
           cl_cons = clust_al.consensus
           aligned_string = clust_al[1].to_s
-          (st, len) = find_good_section(aligned_string, opt[:fidelity_length])
-          pristine = aligned_string[st, len].gsub('-','')  # pristine read (ends removed)
-          clustal_align([template.to_s, Bio::Sequence::NA.new(pristine)], factory)
+          #(st, len) = find_good_section(aligned_string, opt[:fidelity_length])
+          (st, len) = find_good_section(cl_cons, opt[:fidelity_length])
+          if st
+            pristine = aligned_string[st, len].gsub('-','')  # pristine read (ends removed)
+            clustal_align([template.to_s, Bio::Sequence::NA.new(pristine)], factory)
+          else
+            warn "a sequence does not meeting min fidelity! using original alignment" 
+            clust_al
+          end
+
         end
       end
 
@@ -156,38 +167,139 @@ module Bio
       #  pairs_of_strings.map {|pair| pair.map {|st| st[n] } }
       #end
 
+      # assumes the first is the template
+      def consensus_string_and_stats(strings)
+        as_chars = strings.map {|v| v.split("") }
+        stats = Array.new(6, 0)
+        consensus_string = as_chars.shift.zip(*as_chars).map do |chrs|
+          consensus_bool_ar = Array.new(6)
+          symbols = [' '] + %w(^ = . ^ ?) 
+          all_gaps = 0
+          template_gap = 1
+          agreement = 2
+          gap_below_template = 3
+          all_bad_matches = 4
+          non_consensus = 5
+
+          first = chrs.shift
+          if [first, *chrs].all? {|v| v.nil? or (v == '-') }
+            consensus_bool_ar[all_gaps] = true
+          elsif first == '-'
+            consensus_bool_ar[template_gap] = true
+          elsif chrs.all? {|v| v == '-'}
+            consensus_bool_ar[gap_below_template] = true
+          elsif chrs.all? {|v| (v == '-') or (v == first) }
+            consensus_bool_ar[agreement] = true
+          elsif chrs.all? {|v| (v == '-') or (v != first) }
+            consensus_bool_ar[all_bad_matches] = true
+          else
+            consensus_bool_ar[non_consensus] = true
+          end
+          consensus_bool_ar.each_with_index {|v,i| stats[i] += 1 if v }
+          symbols[consensus_bool_ar.index(true)]
+        end.join
+        [consensus_string, stats]
+      end
+
 
       def exactly_chars(string, n)
-        at_least = "%#{n}s" % self
+        at_least = "%#{n}s" % string
         at_least[0,n]
       end
 
+
+      #     all gaps                  <blank>
+      #     template gap              ^
+      #     gap below template        .
+      #     agreement                 =
+      #     all bad matches           ^
+      #     non-consensus             ?
+      #
+      # accepts :template => template_sequence
       def print_align(io, sequences, labels, opts={})
-        opts = {:cutoff => 100, :start => 0, :chars => 20}.merge(opts)
+        opts = {:cutoff => 70, :start => 0, :chars => 20}.merge(opts)
         (start, length, chars) = opts.values_at(:start, :cutoff, :chars)
         spacer = "  "
 
+        if opts[:template]
+          sequences.unshift(opts[:template])
+          labels.unshift(opts[:template_label])
+        end
+
+        all_stats = Array.new(6,0)
         loop do
           fin = false
 
-          ## the counters at the top of the line
-          start_s = start.to_s
-          finish_s = (start + length).to_s
-          count_line_gap = length - (start_s.size + finish_s.size)
-
-          count_line = [start_s, " " * count_line_gap, finish_s].join
-          io.puts [exactly_chars("", chars), spacer, count_line].join
-
-          sequences.zip(labels) do |string, label|
+          max_length = 0
+          lines = []
+          consensus_line = ""
+          fragments = sequences.map do |string|
             fin = (start >= string.length )
             break if fin
-            io.puts "#{exactly_chars(label, chars)}#{spacer}#{string[start,length]}"
+
+            string_frag = string[start, length]
+
+            string_frag
+          end ; break if fin
+
+          doubles = fragments.zip(labels)
+
+          doubles = doubles.select {|frag, _| (frag.size > 0) && (frag =~ /[^-]/) }
+
+          max_length = doubles.map {|frag, _| frag.size }.max
+
+          (cs, stats) = consensus_string_and_stats( doubles.map {|frag,_| frag } )
+          all_stats = all_stats.zip(stats).map {|a,b| a + b }
+
+          doubles.push( [cs, "<CONSENSUS>"] )
+
+          lines = doubles.map {|frag, label| [exactly_chars(label, chars),spacer,frag].join }
+
+          ## the counters at the top of the line
+          start_s = start.to_s
+          finish_s = (start + max_length).to_s
+          count_line_gap = max_length - (start_s.size + finish_s.size)
+          count_line = [start_s, spacer]
+          unless count_line_gap < 1
+            count_line << " " * count_line_gap
           end
-          io.puts " "
-          break if fin
+          io.puts [exactly_chars("", chars), spacer, count_line.join].join
+
+          io.puts lines.join("\n")
+
+          io.puts " "  # separator between lines
           start += length
         end
       end
+
+      #      # accepts :template => template_sequence
+      #def print_align(io, sequences, labels, opts={})
+      #opts = {:cutoff => 100, :start => 0, :chars => 20}.merge(opts)
+      #(start, length, chars) = opts.values_at(:start, :cutoff, :chars)
+      #spacer = "  "
+
+      #loop do
+      #fin = false
+
+      ### the counters at the top of the line
+      #start_s = start.to_s
+      #finish_s = (start + length).to_s
+      #count_line_gap = length - (start_s.size + finish_s.size)
+
+      #count_line = [start_s, " " * count_line_gap, finish_s].join
+      #io.puts [exactly_chars("", chars), spacer, count_line].join
+
+      #sequences.zip(labels) do |string, label|
+      #fin = (start >= string.length )
+      #break if fin
+      #io.puts "#{exactly_chars(label, chars)}#{spacer}#{string[start,length]}"
+      #end
+      #io.puts " "
+      #break if fin
+      #start += length
+      #end
+      #end
+
 
     end
   end
