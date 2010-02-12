@@ -1,0 +1,73 @@
+# http://align.genome.jp/clustalw/clustalw_help.html
+
+ >>HELP 8 <<      Help for command line parameters
+
+                DATA (sequences)
+
+-INFILE=file.ext                             :input sequences.
+
+
+
+                VERBS (do things)
+
+-OPTIONS	    :list the command line parameters
+-HELP  or -CHECK    :outline the command line params.
+-ALIGN              :do full multiple alignment 
+-TREE               :calculate NJ tree.
+-BOOTSTRAP(=n)      :bootstrap a NJ tree (n= number of bootstraps; def. = 1000).
+-CONVERT            :output the input sequences in a different file format.
+
+
+                PARAMETERS (set things)
+
+***General settings:****
+-INTERACTIVE :read command line, then enter normal interactive menus
+-QUICKTREE   :use FAST algorithm for the alignment guide tree
+-TYPE=       :PROTEIN or DNA sequences
+-NEGATIVE    :protein alignment with negative values in matrix
+-OUTFILE=    :sequence alignment file name
+-OUTPUT=     :GCG, GDE, PHYLIP, PIR or NEXUS
+-OUTORDER=   :INPUT or ALIGNED
+-CASE        :LOWER or UPPER (for GDE output only)
+-SEQNOS=     :OFF or ON (for Clustal output only)
+-SEQNO_RANGE=:OFF or ON (NEW: for all output formats) 
+-RANGE=m,n   :sequence range to write starting m to m+n. 
+
+***Fast Pairwise Alignments:***
+-KTUPLE=n    :word size
+-TOPDIAGS=n  :number of best diags.
+-WINDOW=n    :window around best diags.
+-PAIRGAP=n   :gap penalty
+-SCORE       :PERCENT or ABSOLUTE
+
+
+***Slow Pairwise Alignments:***
+-PWMATRIX=    :Protein weight matrix=BLOSUM, PAM, GONNET, ID or filename
+-PWDNAMATRIX= :DNA weight matrix=IUB, CLUSTALW or filename
+-PWGAPOPEN=f  :gap opening penalty        
+-PWGAPEXT=f   :gap opening penalty
+
+
+***Multiple Alignments:***
+-NEWTREE=      :file for new guide tree
+-USETREE=      :file for old guide tree
+-MATRIX=       :Protein weight matrix=BLOSUM, PAM, GONNET, ID or filename
+-DNAMATRIX=    :DNA weight matrix=IUB, CLUSTALW or filename
+-GAPOPEN=f     :gap opening penalty        
+-GAPEXT=f      :gap extension penalty
+-ENDGAPS       :no end gap separation pen. 
+-GAPDIST=n     :gap separation pen. range
+-NOPGAP        :residue-specific gaps off  
+-NOHGAP        :hydrophilic gaps off
+-HGAPRESIDUES= :list hydrophilic res.    
+-MAXDIV=n      :% ident. for delay
+-TYPE=         :PROTEIN or DNA
+-TRANSWEIGHT=f :transitions weighting
+
+
+***Trees:***
+-OUTPUTTREE=nj OR phylip OR dist OR nexus
+-SEED=n        :seed number for bootstraps.
+-KIMURA        :use Kimura's correction.   
+-TOSSGAPS      :ignore positions with gaps.
+-BOOTLABELS=node OR branch :position of bootstrap values in tree display
