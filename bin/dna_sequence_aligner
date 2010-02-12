@@ -5,8 +5,8 @@ require 'optparse'
 
 require 'bio/alignment/dna_sequence'
 
-# returns an Array of Bio::FastaFormat objects.
-# The method will remove any commented lines first
+# returns an Array of entry objects.  The method will remove any commented
+# lines first
 def fasta_entries(file)
   clean_string = IO.read(file).split("\n").reject {|line| line =~ /^\#/ }.join("\n")
     io = StringIO.new clean_string

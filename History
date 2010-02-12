@@ -1,3 +1,8 @@
+== 0.0.2 / 2010-02-12
+
+* standardized output, used it to align 8 different sequences with roughly 40
+total reads.
+
 == 0.0.1 / 2010-02-11
 
 * Beginning
