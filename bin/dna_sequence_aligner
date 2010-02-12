@@ -52,8 +52,6 @@ bioseqs = fasta_entries.map {|entry| Bio::Sequence::NA.new(entry.seq) }
 labels = fasta_entries.map {|entry| entry.definition }
 
 pairwise = DNAReads.align_pairwise(bioseqs, opt)
-File.open(dumpfile, 'w') {|out| out.print Marshal.dump(pairwise) }
-pairwise
 
 (template, others) = DNAReads.merge_pairwise(pairwise)
 template_label = labels.shift
