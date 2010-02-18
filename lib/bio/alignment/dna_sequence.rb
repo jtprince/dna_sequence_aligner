@@ -79,6 +79,7 @@ module Bio
         :gapext => 20,
         :dnamatrix => 'IUB',  # "IUB" || "CLUSTALW"
         :fidelity_length => 10,
+        :consensus_fidelity => true,
       }
 
       # returns high quality pairwise alignments
@@ -94,7 +95,13 @@ module Bio
           cl_cons = clust_al.consensus
           aligned_string = clust_al[1].to_s
           #(st, len) = find_good_section(aligned_string, opt[:fidelity_length])
-          (st, len) = find_good_section(cl_cons, opt[:fidelity_length])
+          seq_to_use = 
+            if opt[:consensus_fidelity]
+              cl_cons
+            else
+              aligned_string
+            end
+          (st, len) = find_good_section(seq_to_use, opt[:fidelity_length])
           if st
             pristine = aligned_string[st, len].gsub('-','')  # pristine read (ends removed)
             clustal_align([template.to_s, Bio::Sequence::NA.new(pristine)], factory)

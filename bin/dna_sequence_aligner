@@ -5,8 +5,8 @@ require 'optparse'
 
 require 'bio/alignment/dna_sequence'
 
-# returns an Array of Bio::FastaFormat objects.
-# The method will remove any commented lines first
+# returns an Array of entry objects.  The method will remove any commented
+# lines first
 def fasta_entries(file)
   clean_string = IO.read(file).split("\n").reject {|line| line =~ /^\#/ }.join("\n")
     io = StringIO.new clean_string
@@ -29,9 +29,11 @@ op = OptionParser.new do |op|
   op.on("--fidelity-length <#{opt[:fidelity_length]}>", Integer, "min length of correct reads on the ends") {|v| opt[:fidelity_length] = v }
   op.separator " " 
   op.on("--type <DNA|PROTEIN>", "type of bio sequences") {|v| opt[:type] = v }
-  op.on("--gapopen <float>", Float, "gap opening penalty") {|v| opt[:gapopen] = v }
-  op.on("--gapext <float>", Float, "gap extension penalty") {|v| opt[:gapext] = v }
-  op.on("--dnamatrix <IUB|CLUSTALW>", "DNA weight matrix IUB|CLUSTALW") {|v| opt[:dnamatrix] = v }
+  op.on("--gapopen <#{opt[:gapopen]}>", Float, "gap opening penalty") {|v| opt[:gapopen] = v }
+  op.on("--gapext <#{opt[:gapext]}>", Float, "gap extension penalty") {|v| opt[:gapext] = v }
+  op.on("--dnamatrix <String>", "DNA weight matrix IUB|CLUSTALW") {|v| opt[:dnamatrix] = v }
+  op.separator " " 
+  op.on("-n", "--no-consensus", "use original seq for fidelity (not cons.)") {|v| opt[:consensus_fidelity] = false }
   op.separator " " 
   op.separator "the first sequence is assumed the template sequence"
 
@@ -42,31 +44,18 @@ if ARGV.size == 0
   exit
 end
 
-dumpfile = "mydump.rbdump"
 
 labels = nil
-  #if File.exist?(dumpfile)
-  #  Marshal.load(IO.read(dumpfile))
-  #else
-    files = ARGV.map
-    fasta_entries = files.inject([]) {|ar, file| ar.push( *fasta_entries(file) ) }
-    bioseqs = fasta_entries.map {|entry| Bio::Sequence::NA.new(entry.seq) }
-    labels = fasta_entries.map {|entry| entry.definition }
+files = ARGV.map
+fasta_entries = files.inject([]) {|ar, file| ar.push( *fasta_entries(file) ) }
+bioseqs = fasta_entries.map {|entry| Bio::Sequence::NA.new(entry.seq) }
+labels = fasta_entries.map {|entry| entry.definition }
 
-    pairwise = DNAReads.align_pairwise(bioseqs, opt)
-    File.open(dumpfile, 'w') {|out| out.print Marshal.dump(pairwise) }
-    pairwise
-  #end
+pairwise = DNAReads.align_pairwise(bioseqs, opt)
 
 (template, others) = DNAReads.merge_pairwise(pairwise)
 template_label = labels.shift
 
 DNAReads.print_align(STDOUT, others, labels, :template => template, :template_label => template_label, :chars => 30)
-
-
-
-#Bio::Alignment::DNASequenceReads.print_align(STDOUT, align_s, labels)
-
-
 
 

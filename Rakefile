@@ -14,8 +14,8 @@ gemspec = Gem::Specification.new do |s|
   s.authors = ["John T. Prince"]
   s.email = "jtprince@gmail.com"
   s.homepage = "http://jtprince.github.com/" + NAME
-  s.summary = "does high quality alignment of sequencing reads"
-  s.description = "does high quality alignment of sequencing reads"
+  s.summary = "does high pairwise alignment of sequencing reads with a template"
+  s.description = "does high pairwise alignment of sequencing reads with a template using bioruby and clustalw.  gives template-centric output."
   s.add_dependency("bio")
   s.add_development_dependency("spec-more")
 end

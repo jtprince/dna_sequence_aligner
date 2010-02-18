@@ -1,9 +1,57 @@
 = DNASequenceAligner
 
+dna_sequence_aligner assumes you have a template dna sequence.  All other DNA
+sequences are matched up with the template and then they are all merged into
+one template-centric alignment.  The output was custom designed to show
+coverage at a glance in a template-centric fashion.
+
+The software is also written so that you can annotate your template fasta file
+with comments (must lead with a '#' character).  
+
+== Dependencies
+
+*Clustalw* must be installed (*clustalw* package in ubuntu/debian) and generally
+accessible.  
+
+[Bioruby is heavily relied on, but it is explicitly stated as a gem dependency
+so you shouldn't have to worry about it if installed by gem]
+
 == Examples
 
-    dna_sequence_aligner.rb template.fasta others.fasta
-    dna_sequence_aligner.rb template.fasta other1.fasta other2.fasta
+The executable is the main item of interest.  It takes one (or more) sequence
+files.  Your template should be the first fasta encountered.
+
+    dna_sequence_aligner template.fasta others.fasta > output.aligned.txt
+
+    # sequences in separate files
+    dna_sequence_aligner template.fasta other1.fasta other2.fasta > output.aligned.txt
+
+    # all sequences in one file (template first)
+    dna_sequence_aligner all_seqs.fasta > output.aligned.txt
+
+A comment (#) aware DNA sequence translator is provided to check and see if
+things are in register and so forth.  It outputs the DNA sequence and protein
+sequence below it.
+
+    # -s 2 is a 2 nucleotide frameshift
+    dna_translator.rb -s 2 dna_annotated.fasta > protein.txt
+
+== Legend
+
+    all gaps            <blank>
+    template gap        ^
+    gap below template  .
+    agreement           =
+    all bad matches     ^
+    non-consensus       ?
+
+== NOTE
+
+This is very much alpha software at the moment.  It was written in a time
+crunch and so it is a little rough around the edges.  However, key components
+have specs written and appear to work properly.  If I have to do more
+alignments or you send me pull requests then this may get to be nicer
+software.
 
 == Copyright
 
